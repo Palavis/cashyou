@@ -11,7 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as MonthlyRouteImport } from './routes/monthly'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +28,110 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategoriesRoute = CategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonthlyRoute = MonthlyRouteImport.update({
+  id: '/monthly',
+  path: '/monthly',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/dashboard': typeof DashboardRoute
+  '/monthly': typeof MonthlyRoute
   '/review': typeof ReviewRoute
+  '/settings': typeof SettingsRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/dashboard': typeof DashboardRoute
+  '/monthly': typeof MonthlyRoute
   '/review': typeof ReviewRoute
+  '/settings': typeof SettingsRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/dashboard': typeof DashboardRoute
+  '/monthly': typeof MonthlyRoute
   '/review': typeof ReviewRoute
+  '/settings': typeof SettingsRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/review'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/categories'
+    | '/dashboard'
+    | '/monthly'
+    | '/review'
+    | '/settings'
+    | '/transactions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/review'
-  id: '__root__' | '/' | '/auth' | '/review'
+  to:
+    | '/'
+    | '/auth'
+    | '/categories'
+    | '/dashboard'
+    | '/monthly'
+    | '/review'
+    | '/settings'
+    | '/transactions'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/categories'
+    | '/dashboard'
+    | '/monthly'
+    | '/review'
+    | '/settings'
+    | '/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CategoriesRoute: typeof CategoriesRoute
+  DashboardRoute: typeof DashboardRoute
+  MonthlyRoute: typeof MonthlyRoute
   ReviewRoute: typeof ReviewRoute
+  SettingsRoute: typeof SettingsRoute
+  TransactionsRoute: typeof TransactionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +150,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/monthly': {
+      id: '/monthly'
+      path: '/monthly'
+      fullPath: '/monthly'
+      preLoaderRoute: typeof MonthlyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/review': {
       id: '/review'
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +198,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CategoriesRoute: CategoriesRoute,
+  DashboardRoute: DashboardRoute,
+  MonthlyRoute: MonthlyRoute,
   ReviewRoute: ReviewRoute,
+  SettingsRoute: SettingsRoute,
+  TransactionsRoute: TransactionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
