@@ -85,7 +85,6 @@ function ReviewPage() {
     let transfers = 0;
     let review = 0;
     for (const r of active) {
-      if (r.txnTypeIsIncome?.()) void 0;
       if (r.type === "income") income += r.amount;
       else if (r.type === "expense") expenses += r.amount;
       else transfers += r.amount;
