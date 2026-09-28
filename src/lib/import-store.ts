@@ -20,8 +20,8 @@ export interface StagedTxn {
 export interface StagedImport {
   fileName: string;
   fileType: string;
-  bankGuess?: string;
-  accountMask?: string;
+  bankGuess?: string | undefined;
+  accountMask?: string | undefined;
   table: RawTable;
   mapping: ColumnMapping;
   rows: StagedTxn[];

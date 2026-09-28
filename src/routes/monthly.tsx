@@ -37,7 +37,7 @@ export const Route = createFileRoute("/monthly")({
 });
 
 function previousMonth(key: string) {
-  const [y, m] = key.split("-").map(Number);
+  const [y = 1970, m = 1] = key.split("-").map(Number) as number[];
   const d = new Date(y, m - 2, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -132,7 +132,7 @@ function MonthlyPage() {
                       <span
                         className="block h-1.5 rounded-full"
                         style={{
-                          width: `${(c.value / cmp.categories[0].value) * 100}%`,
+                          width: `${(c.value / cmp.categories[0]!.value) * 100}%`,
                           backgroundColor: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length],
                         }}
                       />

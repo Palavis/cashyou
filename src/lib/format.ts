@@ -35,12 +35,12 @@ export function monthKey(iso: string) {
 }
 
 export function monthLabel(key: string) {
-  const [y, m] = key.split("-").map(Number);
+  const [y = 1970, m = 1] = key.split("-").map(Number) as number[];
   return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 }
 
 export function shortMonthLabel(key: string) {
-  const [y, m] = key.split("-").map(Number);
+  const [y = 1970, m = 1] = key.split("-").map(Number) as number[];
   return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
 }
 

@@ -13,8 +13,9 @@ export function enrich(
 ): EnrichedTxn[] {
   return transactions.map((t) => {
     const path = (t.category_id && pathById.get(t.category_id)) || "Other > Uncategorized";
-    const [group, leaf] = path.split(" > ");
-    return { ...t, categoryPath: path, group, leaf: leaf ?? group };
+    const parts = path.split(" > ");
+    const group = parts[0] ?? path;
+    return { ...t, categoryPath: path, group, leaf: parts[1] ?? group };
   });
 }
 
@@ -118,7 +119,7 @@ export function detectRecurring(txns: EnrichedTxn[]): Recurring[] {
     const gaps: number[] = [];
     for (let i = 1; i < sorted.length; i++) {
       gaps.push(
-        (new Date(sorted[i].txn_date).getTime() - new Date(sorted[i - 1].txn_date).getTime()) /
+        (new Date(sorted[i]!.txn_date).getTime() - new Date(sorted[i - 1]!.txn_date).getTime()) /
           86400000,
       );
     }
@@ -144,11 +145,11 @@ export function detectRecurring(txns: EnrichedTxn[]): Recurring[] {
 
     out.push({
       merchant,
-      category: sorted[sorted.length - 1].categoryPath,
+      category: sorted[sorted.length - 1]!.categoryPath,
       averageAmount: avgAmount,
       occurrences: sorted.length,
       cadence,
-      lastDate: sorted[sorted.length - 1].txn_date,
+      lastDate: sorted[sorted.length - 1]!.txn_date,
       monthlyEstimate: avgAmount * perMonth,
     });
   }

@@ -73,8 +73,8 @@ export function sampleCsv(months = 6): string {
     const month = d.getMonth() + 1;
     const lastDay = new Date(year, month, 0).getDate();
     const seeds = [...MONTHLY];
-    if (back % 2 === 0) seeds.push(OCCASIONAL[back % OCCASIONAL.length]);
-    if (back === 0) seeds.push(OCCASIONAL[(back + 3) % OCCASIONAL.length]);
+    if (back % 2 === 0) seeds.push(OCCASIONAL[back % OCCASIONAL.length]!);
+    if (back === 0) seeds.push(OCCASIONAL[(back + 3) % OCCASIONAL.length]!);
 
     for (const seed of seeds.sort((a, b) => a.day - b.day)) {
       const day = Math.min(seed.day, lastDay);

@@ -36,15 +36,15 @@ export function merchantLabel(key: string): string {
   return key
     .toLowerCase()
     .split(" ")
-    .map((w) => (w.length <= 2 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
+    .map((w) => (w.length <= 2 ? w.toUpperCase() : (w[0] ?? "").toUpperCase() + w.slice(1)))
     .join(" ");
 }
 
 interface Rule {
   match: RegExp;
   category: string;
-  type?: TxnType;
-  label?: string;
+  type?: TxnType | undefined;
+  label?: string | undefined;
 }
 
 /** Built-in rules. User rules always take priority over these. */
@@ -114,7 +114,7 @@ export interface Categorization {
  */
 export function categorize(
   description: string,
-  userRules: Record<string, { categoryPath: string; type?: TxnType }> = {},
+  userRules: Record<string, { categoryPath: string; type?: TxnType | undefined }> = {},
 ): Categorization & { merchantKey: string } {
   const merchantKey = normalizeMerchant(description);
   const userRule = userRules[merchantKey];
