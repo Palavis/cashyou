@@ -143,7 +143,7 @@ function ReviewPage() {
     importStore.updateRows((list) => {
       const idx = list.findIndex((r) => r.id === splitting.id);
       if (idx < 0) return list;
-      const original = list[idx];
+      const original = list[idx]!;
       const first = { ...original, amount: original.amount - part };
       const second: StagedTxn = {
         ...original,

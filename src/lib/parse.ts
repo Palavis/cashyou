@@ -4,8 +4,8 @@ export interface RawTable {
   headers: string[];
   rows: string[][];
   /** Masked account number if one was detected in the file (never the full number). */
-  accountMask?: string;
-  bankGuess?: string;
+  accountMask?: string | undefined;
+  bankGuess?: string | undefined;
   fileType: "csv" | "xlsx" | "pdf";
 }
 
@@ -79,7 +79,8 @@ function pickDelimiter(text: string) {
     "\t": (sample.match(/\t/g) || []).length,
     "|": (sample.match(/\|/g) || []).length,
   };
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return best ? best[0] : ",";
 }
 
 /** Bank statements often carry preamble rows before the real header row. */
@@ -87,13 +88,13 @@ function tableFromGrid(grid: string[][], fileType: RawTable["fileType"]): RawTab
   let headerIndex = 0;
   let bestScore = -1;
   for (let i = 0; i < Math.min(grid.length, 30); i++) {
-    const score = headerScore(grid[i]);
+    const score = headerScore(grid[i] ?? []);
     if (score > bestScore) {
       bestScore = score;
       headerIndex = i;
     }
   }
-  const headers = grid[headerIndex].map((h, i) => h || `Column ${i + 1}`);
+  const headers = (grid[headerIndex] ?? []).map((h, i) => h || `Column ${i + 1}`);
   const rows = grid
     .slice(headerIndex + 1)
     .filter((r) => r.some((c) => c && c.trim() !== ""))
@@ -145,7 +146,7 @@ export async function readXlsx(file: File): Promise<RawTable> {
   const XLSX = await import("xlsx");
   const buffer = await file.arrayBuffer();
   const wb = XLSX.read(buffer, { type: "array", cellDates: true });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const sheet = wb.Sheets[wb.SheetNames[0] ?? ""]!;
   const grid = XLSX.utils.sheet_to_json<string[]>(sheet, {
     header: 1,
     raw: false,
@@ -191,9 +192,9 @@ export async function readPdf(file: File): Promise<RawTable> {
     const byRow = new Map<number, { x: number; s: string }[]>();
     for (const item of content.items as { str: string; transform: number[] }[]) {
       if (!item.str || !item.str.trim()) continue;
-      const y = Math.round(item.transform[5] / 3) * 3;
+      const y = Math.round((item.transform[5] ?? 0) / 3) * 3;
       const arr = byRow.get(y) ?? [];
-      arr.push({ x: item.transform[4], s: item.str });
+      arr.push({ x: item.transform[4] ?? 0, s: item.str });
       byRow.set(y, arr);
     }
     const ys = [...byRow.keys()].sort((a, b) => b - a);
@@ -208,7 +209,7 @@ export async function readPdf(file: File): Promise<RawTable> {
       if (line) lines.push(line);
     }
   }
-  doc.destroy();
+  await (doc as unknown as { destroy: () => Promise<void> }).destroy();
 
   const head = lines.slice(0, 20).join(" ");
   const rows: string[][] = [];
@@ -218,7 +219,7 @@ export async function readPdf(file: File): Promise<RawTable> {
     const rest = line.slice(dateMatch[0].length).trim();
     const numbers = rest.match(NUMBER_TOKEN) ?? [];
     if (numbers.length === 0) continue;
-    const firstNumberAt = rest.indexOf(numbers[0]);
+    const firstNumberAt = rest.indexOf(numbers[0] ?? "");
     const description = rest.slice(0, firstNumberAt).trim() || rest;
 
     let debit = "";
@@ -231,18 +232,18 @@ export async function readPdf(file: File): Promise<RawTable> {
         else debit = n;
       }
       const plain = numbers.filter((n) => !/(Dr|Cr)$/i.test(n.trim()));
-      if (plain.length) balance = plain[plain.length - 1];
+      if (plain.length) balance = plain[plain.length - 1] ?? "";
     } else if (numbers.length >= 3) {
       // amount-ish, amount-ish, balance — one of the first two is blank in the
       // original layout, so treat the larger trailing one as balance.
-      debit = numbers[numbers.length - 3];
-      credit = numbers[numbers.length - 2];
-      balance = numbers[numbers.length - 1];
+      debit = numbers[numbers.length - 3] ?? "";
+      credit = numbers[numbers.length - 2] ?? "";
+      balance = numbers[numbers.length - 1] ?? "";
     } else if (numbers.length === 2) {
-      debit = numbers[0];
-      balance = numbers[1];
+      debit = numbers[0] ?? "";
+      balance = numbers[1] ?? "";
     } else {
-      debit = numbers[0];
+      debit = numbers[0] ?? "";
     }
 
     rows.push([dateMatch[0], description, clean(debit), clean(credit), clean(balance)]);
@@ -328,13 +329,13 @@ export function parseDate(value: string): string | null {
   if (dmy) {
     let [, d, m, y] = dmy;
     if (Number(m) > 12 && Number(d) <= 12) [d, m] = [m, d];
-    const year = y.length === 2 ? 2000 + Number(y) : Number(y);
+    const year = (y ?? "").length === 2 ? 2000 + Number(y) : Number(y);
     return build(year, Number(m), Number(d));
   }
 
   const dMon = raw.match(/^(\d{1,2})[\s-]?([A-Za-z]{3,9})[\s,-]*(\d{2,4})?/);
   if (dMon) {
-    const m = MONTHS[dMon[2].slice(0, 3).toLowerCase()];
+    const m = MONTHS[(dMon[2] ?? "").slice(0, 3).toLowerCase()];
     if (m) {
       const y = dMon[3] ? (dMon[3].length === 2 ? 2000 + Number(dMon[3]) : Number(dMon[3])) : new Date().getFullYear();
       return build(y, m, Number(dMon[1]));

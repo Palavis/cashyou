@@ -30,18 +30,18 @@ import { normalizeMerchant, type TxnType } from "@/lib/merchants";
 import { cn } from "@/lib/utils";
 
 interface TxnSearch {
-  q?: string;
-  group?: string;
-  month?: string;
-  type?: string;
+  q?: string | undefined;
+  group?: string | undefined;
+  month?: string | undefined;
+  type?: string | undefined;
 }
 
 export const Route = createFileRoute("/transactions")({
   validateSearch: (search: Record<string, unknown>): TxnSearch => ({
-    q: typeof search.q === "string" ? search.q : undefined,
-    group: typeof search.group === "string" ? search.group : undefined,
-    month: typeof search.month === "string" ? search.month : undefined,
-    type: typeof search.type === "string" ? search.type : undefined,
+    q: typeof search["q"] === "string" ? (search["q"] as string) : undefined,
+    group: typeof search["group"] === "string" ? (search["group"] as string) : undefined,
+    month: typeof search["month"] === "string" ? (search["month"] as string) : undefined,
+    type: typeof search["type"] === "string" ? (search["type"] as string) : undefined,
   }),
   head: () => ({
     meta: [

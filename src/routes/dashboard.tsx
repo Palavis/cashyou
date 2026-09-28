@@ -279,7 +279,7 @@ function DashboardPage() {
                         <span className="mt-1 block h-1.5 rounded-full bg-secondary">
                           <span
                             className="block h-1.5 rounded-full bg-primary"
-                            style={{ width: `${(m.value / merchants[0].value) * 100}%` }}
+                            style={{ width: `${(m.value / merchants[0]!.value) * 100}%` }}
                           />
                         </span>
                       </span>
