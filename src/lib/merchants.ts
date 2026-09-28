@@ -104,8 +104,8 @@ export interface Categorization {
   categoryPath: string;
   confidence: number;
   source: "user-rule" | "built-in" | "fallback";
-  type?: TxnType;
-  label?: string;
+  type?: TxnType | undefined;
+  label?: string | undefined;
 }
 
 /**
