@@ -60,10 +60,10 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
 export const UNCATEGORIZED_PATH = "Other > Uncategorized";
 
 export const CATEGORY_PALETTE = [
-  "chart-1",
-  "chart-2",
-  "chart-3",
-  "chart-4",
-  "chart-5",
-  "chart-6",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
 ];
