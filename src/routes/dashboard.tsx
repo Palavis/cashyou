@@ -178,10 +178,12 @@ function DashboardPage() {
                     innerRadius="52%"
                     outerRadius="80%"
                     paddingAngle={2}
-                    onClick={(slice: { name?: string }) =>
-                      slice?.name &&
-                      navigate({ to: "/transactions", search: { group: slice.name, month } })
-                    }
+                    onClick={(slice: { name?: string }, index?: number) => {
+                      const name =
+                        slice?.name ??
+                        (typeof index === "number" ? categorySplit[index]?.name : undefined);
+                      if (name) navigate({ to: "/transactions", search: { group: name, month } });
+                    }}
                   >
                     {categorySplit.map((entry, i) => (
                       <Cell
