@@ -24,7 +24,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,6 +39,15 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Reset link sent — check your email.");
+        setMode("signin");
+        return;
+      }
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
@@ -71,18 +80,28 @@ function AuthPage() {
 
         <Card className="shadow-lift">
           <CardHeader>
-            <CardTitle>{mode === "signin" ? "Welcome back" : "Create your private account"}</CardTitle>
+            <CardTitle>
+              {mode === "signin"
+                ? "Welcome back"
+                : mode === "signup"
+                  ? "Create your private account"
+                  : "Reset your password"}
+            </CardTitle>
             <CardDescription>
-              Your transactions are visible only to you. Nothing is shared or sold.
+              {mode === "forgot"
+                ? "Enter your email and we'll send you a reset link."
+                : "Your transactions are visible only to you. Nothing is shared or sold."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {mode !== "forgot" ? (
+              <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign in</TabsTrigger>
+                  <TabsTrigger value="signup">Sign up</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            ) : null}
 
             <form className="space-y-4" onSubmit={submit}>
               <div className="space-y-2">
@@ -97,23 +116,51 @@ function AuthPage() {
                   placeholder="you@example.com"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                />
-              </div>
+              {mode !== "forgot" ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {mode === "signin" ? (
+                      <button
+                        type="button"
+                        className="text-xs text-primary hover:underline"
+                        onClick={() => setMode("forgot")}
+                      >
+                        Forgot password?
+                      </button>
+                    ) : null}
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                  />
+                </div>
+              ) : null}
               <Button type="submit" className="w-full" disabled={busy}>
                 <Lock className="h-4 w-4" />
-                {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+                {busy
+                  ? "Please wait…"
+                  : mode === "signin"
+                    ? "Sign in"
+                    : mode === "signup"
+                      ? "Create account"
+                      : "Send reset link"}
               </Button>
+              {mode === "forgot" ? (
+                <button
+                  type="button"
+                  className="w-full text-center text-xs text-muted-foreground hover:underline"
+                  onClick={() => setMode("signin")}
+                >
+                  Back to sign in
+                </button>
+              ) : null}
             </form>
 
             <p className="flex items-start gap-2 rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
