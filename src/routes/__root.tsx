@@ -127,6 +127,24 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (window.location.hash.includes("type=recovery") && window.location.pathname !== "/reset-password") {
+      router.navigate({ to: "/reset-password" });
+    }
+    let unsub = () => {};
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY") {
+          sessionStorage.setItem("pw-recovery", "1");
+          router.navigate({ to: "/reset-password" });
+        }
+      });
+      unsub = () => data.subscription.unsubscribe();
+    });
+    return () => unsub();
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
