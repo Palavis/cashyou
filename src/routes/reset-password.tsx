@@ -32,9 +32,12 @@ function ResetPasswordPage() {
     // The recovery link arrives with type=recovery in the URL hash; the
     // Supabase client exchanges it for a session and fires PASSWORD_RECOVERY.
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) setReady(true);
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setReady(true);
+    if (hash.includes("type=recovery") || sessionStorage.getItem("pw-recovery")) setReady(true);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -49,6 +52,7 @@ function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      sessionStorage.removeItem("pw-recovery");
       toast.success("Password updated. You're signed in.");
       navigate({ to: "/" });
     } catch (err) {
