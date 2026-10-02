@@ -209,7 +209,13 @@ export async function readPdf(file: File): Promise<RawTable> {
       if (line) lines.push(line);
     }
   }
-  await (doc as unknown as { destroy: () => Promise<void> }).destroy();
+  try {
+    const d = doc as unknown as { destroy?: () => Promise<void>; cleanup?: () => Promise<void> };
+    if (typeof d.destroy === "function") await d.destroy();
+    else if (typeof d.cleanup === "function") await d.cleanup();
+  } catch {
+    /* cleanup is best-effort */
+  }
 
   const head = lines.slice(0, 20).join(" ");
   const rows: string[][] = [];
