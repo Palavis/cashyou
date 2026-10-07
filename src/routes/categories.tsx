@@ -15,13 +15,15 @@ import { merchantLabel } from "@/lib/merchants";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
-      { title: "Categories — SpendWise" },
+      { title: "Categories — Cashyou" },
       {
         name: "description",
         content: "Rename, add or remove spending categories and manage remembered merchant rules.",
       },
-      { property: "og:title", content: "Categories — SpendWise" },
+      { property: "og:title", content: "Categories — Cashyou" },
       { property: "og:description", content: "Make the category list your own." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -113,7 +115,7 @@ function CategoriesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Categories</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Rename anything, add your own, and manage the merchants you've taught SpendWise.
+          Rename anything, add your own, and manage the merchants you've taught Cashyou.
         </p>
       </div>
 

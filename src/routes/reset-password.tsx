@@ -11,10 +11,12 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — SpendWise" },
-      { name: "description", content: "Choose a new password for your SpendWise account." },
-      { property: "og:title", content: "Reset password — SpendWise" },
-      { property: "og:description", content: "Choose a new password for your SpendWise account." },
+      { title: "Reset password — Cashyou" },
+      { name: "description", content: "Choose a new password for your Cashyou account." },
+      { property: "og:title", content: "Reset password — Cashyou" },
+      { property: "og:description", content: "Choose a new password for your Cashyou account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -69,7 +71,7 @@ function ResetPasswordPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Wallet className="h-5 w-5" />
           </span>
-          <span className="text-xl font-semibold tracking-tight">SpendWise</span>
+          <span className="text-xl font-semibold tracking-tight">Cashyou</span>
         </div>
 
         <Card className="shadow-lift">
