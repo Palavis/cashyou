@@ -170,12 +170,19 @@ const DATE_START =
   /^(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}\s?[A-Za-z]{3,9}\s?[-,]?\s?\d{2,4}|\d{4}-\d{2}-\d{2})/;
 const NUMBER_TOKEN = /-?(?:\d{1,3}(?:,\d{2,3})+|\d+)(?:\.\d{1,2})?(?:\s?(?:Dr|Cr|DR|CR))?/g;
 
+export class PdfPasswordError extends Error {
+  constructor(public readonly incorrect: boolean) {
+    super(incorrect ? "The PDF password is incorrect." : "This PDF requires a password.");
+    this.name = "PdfPasswordError";
+  }
+}
+
 /**
  * Extracts text lines from a PDF and reconstructs statement rows.
  * Handles the common Indian bank layouts: separate debit/credit columns,
  * single amount column with a Dr/Cr suffix, and an optional running balance.
  */
-export async function readPdf(file: File): Promise<RawTable> {
+export async function readPdf(file: File, password?: string): Promise<RawTable> {
   const pdfjs = await import("pdfjs-dist");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (pdfjs as any).GlobalWorkerOptions.workerSrc = new URL(
@@ -184,7 +191,23 @@ export async function readPdf(file: File): Promise<RawTable> {
   ).toString();
 
   const data = new Uint8Array(await file.arrayBuffer());
-  const doc = await pdfjs.getDocument({ data }).promise;
+  const loadingTask = pdfjs.getDocument({ data, ...(password === undefined ? {} : { password }) });
+  let doc: Awaited<typeof loadingTask.promise>;
+  try {
+    doc = await loadingTask.promise;
+  } catch (error) {
+    try {
+      await loadingTask.destroy();
+    } catch {
+      /* cleanup is best-effort */
+    }
+    if (error instanceof pdfjs.PasswordException) {
+      throw new PdfPasswordError(
+        error.code === pdfjs.PasswordResponses.INCORRECT_PASSWORD,
+      );
+    }
+    throw error;
+  }
   const lines: string[] = [];
   for (let p = 1; p <= doc.numPages; p++) {
     const page = await doc.getPage(p);
@@ -268,11 +291,11 @@ function clean(n: string) {
   return n.replace(/\s?(Dr|Cr|DR|CR)$/i, "").trim();
 }
 
-export async function readStatementFile(file: File): Promise<RawTable> {
+export async function readStatementFile(file: File, password?: string): Promise<RawTable> {
   const name = file.name.toLowerCase();
   if (name.endsWith(".csv") || name.endsWith(".txt")) return readCsv(file);
   if (name.endsWith(".xlsx") || name.endsWith(".xls")) return readXlsx(file);
-  if (name.endsWith(".pdf")) return readPdf(file);
+  if (name.endsWith(".pdf")) return readPdf(file, password);
   throw new Error("Unsupported file. Please use a CSV, XLSX or PDF statement.");
 }
 

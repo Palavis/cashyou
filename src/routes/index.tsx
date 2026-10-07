@@ -14,6 +14,16 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,6 +35,7 @@ import {
   buildTransactions,
   detectMapping,
   EMPTY_MAPPING,
+  PdfPasswordError,
   readStatementFile,
   type ColumnMapping,
   type RawTable,
@@ -79,6 +90,9 @@ function UploadPage() {
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<{ file: File; table: RawTable } | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>(EMPTY_MAPPING);
+  const [passwordFile, setPasswordFile] = useState<File | null>(null);
+  const [pdfPassword, setPdfPassword] = useState("");
+  const [passwordIncorrect, setPasswordIncorrect] = useState(false);
 
   const { data: categories = [] } = useCategories();
   const { data: rules = [] } = useMerchantRules();
@@ -129,11 +143,14 @@ function UploadPage() {
     return true;
   }
 
-  async function handleFile(file: File) {
+  async function handleFile(file: File, password?: string) {
     setBusy(true);
     setPending(null);
     try {
-      const table = await readStatementFile(file);
+      const table = await readStatementFile(file, password);
+      setPasswordFile(null);
+      setPdfPassword("");
+      setPasswordIncorrect(false);
       const { mapping: detected, confident } = detectMapping(table.headers);
       if (!confident) {
         setPending({ file, table });
@@ -143,7 +160,13 @@ function UploadPage() {
       }
       if (stage(file, table, detected)) navigate({ to: "/review" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not read that file");
+      if (err instanceof PdfPasswordError) {
+        setPasswordFile(file);
+        setPdfPassword("");
+        setPasswordIncorrect(err.incorrect);
+      } else {
+        toast.error(err instanceof Error ? err.message : "Could not read that file");
+      }
     } finally {
       setBusy(false);
       // The File object goes out of scope here; nothing is uploaded or persisted.
@@ -152,6 +175,73 @@ function UploadPage() {
 
   return (
     <div className="space-y-6">
+      <Dialog
+        open={passwordFile !== null}
+        onOpenChange={(open) => {
+          if (!open && !busy) {
+            setPasswordFile(null);
+            setPdfPassword("");
+            setPasswordIncorrect(false);
+          }
+        }}
+      >
+        <DialogContent>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (passwordFile && pdfPassword.length > 0) {
+                void handleFile(passwordFile, pdfPassword);
+              }
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Password-protected PDF</DialogTitle>
+              <DialogDescription>
+                Enter the password provided by your bank to read this statement. It is used only in
+                your browser and is not saved.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 py-4">
+              <Label htmlFor="statement-password">PDF password</Label>
+              <Input
+                id="statement-password"
+                type="password"
+                autoComplete="off"
+                autoFocus
+                value={pdfPassword}
+                onChange={(event) => setPdfPassword(event.target.value)}
+                disabled={busy}
+                aria-invalid={passwordIncorrect}
+                aria-describedby={passwordIncorrect ? "statement-password-error" : undefined}
+              />
+              {passwordIncorrect ? (
+                <p id="statement-password-error" className="text-sm text-destructive" role="alert">
+                  That password didn’t work. Check it and try again.
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => {
+                  setPasswordFile(null);
+                  setPdfPassword("");
+                  setPasswordIncorrect(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={busy || pdfPassword.length === 0}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {busy ? "Reading PDF…" : "Unlock PDF"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Upload a statement</h1>
         <p className="mt-1 text-sm text-muted-foreground">
