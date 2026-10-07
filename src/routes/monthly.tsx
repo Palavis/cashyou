@@ -19,13 +19,15 @@ import { CATEGORY_PALETTE } from "@/lib/categories";
 export const Route = createFileRoute("/monthly")({
   head: () => ({
     meta: [
-      { title: "Monthly view — SpendWise" },
+      { title: "Monthly view — Cashyou" },
       {
         name: "description",
         content: "Compare this month's income, spending and category mix against the previous month.",
       },
-      { property: "og:title", content: "Monthly view — SpendWise" },
+      { property: "og:title", content: "Monthly view — Cashyou" },
       { property: "og:description", content: "Month-on-month spending comparison." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

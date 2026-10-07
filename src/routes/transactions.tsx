@@ -45,13 +45,15 @@ export const Route = createFileRoute("/transactions")({
   }),
   head: () => ({
     meta: [
-      { title: "Transactions — SpendWise" },
+      { title: "Transactions — Cashyou" },
       {
         name: "description",
-        content: "Search, filter and correct every transaction you have imported into SpendWise.",
+        content: "Search, filter and correct every transaction you have imported into Cashyou.",
       },
-      { property: "og:title", content: "Transactions — SpendWise" },
+      { property: "og:title", content: "Transactions — Cashyou" },
       { property: "og:description", content: "Search and correct your imported transactions." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

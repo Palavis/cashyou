@@ -21,13 +21,15 @@ import { formatFullDate } from "@/lib/format";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — SpendWise" },
+      { title: "Settings — Cashyou" },
       {
         name: "description",
         content: "Review how your data is handled, reset categories or delete everything you stored.",
       },
-      { property: "og:title", content: "Settings — SpendWise" },
+      { property: "og:title", content: "Settings — Cashyou" },
       { property: "og:description", content: "Privacy controls and data deletion for your account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -80,7 +82,7 @@ function SettingsPage() {
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="h-4 w-4 text-primary" /> Privacy
             </CardTitle>
-            <CardDescription>How SpendWise treats your financial data</CardDescription>
+            <CardDescription>How Cashyou treats your financial data</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>· Statement files are read in your browser and never uploaded or kept.</p>

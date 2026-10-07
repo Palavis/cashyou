@@ -1,6 +1,6 @@
-# SpendWise Insights
+# Cashyou Insights
 
-Build a private personal finance web app called SpendWise.
+Build a private personal finance web app called Cashyou.
 
 The purpose of the app is to let me upload my bank statement and automatically convert the transactions into categorized expenses/income, then show useful spending insights.
 

@@ -39,17 +39,19 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Upload statement — SpendWise" },
+      { title: "Upload statement — Cashyou" },
       {
         name: "description",
         content:
-          "Drop a CSV, XLSX or PDF bank statement and SpendWise turns it into categorized transactions — processed in your browser, never stored.",
+          "Drop a CSV, XLSX or PDF bank statement and Cashyou turns it into categorized transactions — processed in your browser, never stored.",
       },
-      { property: "og:title", content: "Upload statement — SpendWise" },
+      { property: "og:title", content: "Upload statement — Cashyou" },
       {
         property: "og:description",
         content: "Turn a bank statement into categorized spending insights, privately.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

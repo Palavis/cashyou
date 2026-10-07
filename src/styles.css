@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * SpendWise design system — quiet finance-dashboard aesthetic.
+ * Cashyou design system — quiet finance-dashboard aesthetic.
  * Neutral slate surfaces, a single deep-teal accent, and dedicated
  * semantic tokens for income / expense / transfer money states.
  * All colours are oklch and defined here only. Never hardcode colours

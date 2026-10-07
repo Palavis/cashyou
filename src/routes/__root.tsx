@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SpendWise — Private spending insights" },
+      { title: "Cashyou — Private spending insights" },
       {
         name: "description",
         content:
           "Turn your bank statements into categorized spending insights. Private by design, for personal use only.",
       },
-      { property: "og:title", content: "SpendWise — Private spending insights" },
+      { property: "og:title", content: "Cashyou — Private spending insights" },
       {
         property: "og:description",
         content:

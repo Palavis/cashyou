@@ -44,13 +44,15 @@ import { useQueryClient } from "@tanstack/react-query";
 export const Route = createFileRoute("/review")({
   head: () => ({
     meta: [
-      { title: "Review import — SpendWise" },
+      { title: "Review import — Cashyou" },
       {
         name: "description",
-        content: "Check and correct auto-categorized transactions before adding them to SpendWise.",
+        content: "Check and correct auto-categorized transactions before adding them to Cashyou.",
       },
-      { property: "og:title", content: "Review import — SpendWise" },
+      { property: "og:title", content: "Review import — Cashyou" },
       { property: "og:description", content: "Check categories before importing your transactions." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

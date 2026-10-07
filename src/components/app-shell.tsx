@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Wallet className="h-5 w-5 animate-pulse" />
-          <span className="text-sm">Loading SpendWise…</span>
+          <span className="text-sm">Loading Cashyou…</span>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Wallet className="h-4 w-4" />
             </span>
-            <span className="text-base font-semibold tracking-tight">SpendWise</span>
+            <span className="text-base font-semibold tracking-tight">Cashyou</span>
           </Link>
 
           <nav className="hidden flex-1 items-center gap-1 md:flex">

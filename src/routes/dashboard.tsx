@@ -44,13 +44,15 @@ import { CATEGORY_PALETTE } from "@/lib/categories";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — SpendWise" },
+      { title: "Dashboard — Cashyou" },
       {
         name: "description",
         content: "See income, expenses, savings rate, category splits and recurring costs at a glance.",
       },
-      { property: "og:title", content: "Dashboard — SpendWise" },
+      { property: "og:title", content: "Dashboard — Cashyou" },
       { property: "og:description", content: "Your spending, summarised." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

@@ -13,10 +13,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — SpendWise" },
-      { name: "description", content: "Sign in to your private SpendWise account." },
-      { property: "og:title", content: "Sign in — SpendWise" },
-      { property: "og:description", content: "Sign in to your private SpendWise account." },
+      { title: "Sign in — Cashyou" },
+      { name: "description", content: "Sign in to your private Cashyou account." },
+      { property: "og:title", content: "Sign in — Cashyou" },
+      { property: "og:description", content: "Sign in to your private Cashyou account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -75,7 +77,7 @@ function AuthPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Wallet className="h-5 w-5" />
           </span>
-          <span className="text-xl font-semibold tracking-tight">SpendWise</span>
+          <span className="text-xl font-semibold tracking-tight">Cashyou</span>
         </div>
 
         <Card className="shadow-lift">
