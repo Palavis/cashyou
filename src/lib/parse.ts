@@ -170,13 +170,14 @@ const DATE_START =
   /^(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}\s?[A-Za-z]{3,9}\s?[-,]?\s?\d{2,4}|\d{4}-\d{2}-\d{2})/;
 const NUMBER_TOKEN = /-?(?:\d{1,3}(?:,\d{2,3})+|\d+)(?:\.\d{1,2})?(?:\s?(?:Dr|Cr|DR|CR))?/g;
 
-type PdfColumn = "date" | "description" | "debit" | "credit" | "amount" | "type" | "balance";
+type PdfColumn = "date" | "description" | "reference" | "debit" | "credit" | "amount" | "type" | "balance";
 type PdfTextItem = { x: number; s: string };
 type PdfLine = { text: string; items: PdfTextItem[] };
 
 const PDF_HEADER_PATTERNS: Record<PdfColumn, RegExp> = {
   date: /\b(?:txn|transaction|value|posting)?\s*date\b/i,
   description: /\b(?:description|narration|particulars?|details|remarks|payee)\b/i,
+  reference: /\b(?:ref(?:erence)?|chq|cheque|check)\b/i,
   debit: /\b(?:debit|withdrawals?|withdrawls?|paid\s+out)\b/i,
   credit: /\b(?:credit|deposits?|paid\s+in)\b/i,
   amount: /\b(?:transaction\s+)?(?:amount|amt)\b/i,
@@ -187,7 +188,7 @@ const PDF_HEADER_PATTERNS: Record<PdfColumn, RegExp> = {
 function pdfHeaderColumn(text: string): PdfColumn | undefined {
   const value = text.replace(/\s+/g, " ").trim();
   if (PDF_HEADER_PATTERNS.type.test(value)) return "type";
-  for (const column of ["date", "description", "debit", "credit", "amount", "balance"] as const) {
+  for (const column of ["date", "description", "reference", "debit", "credit", "amount", "balance"] as const) {
     if (PDF_HEADER_PATTERNS[column].test(value)) return column;
   }
   return undefined;
