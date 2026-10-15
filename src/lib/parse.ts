@@ -170,6 +170,72 @@ const DATE_START =
   /^(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}\s?[A-Za-z]{3,9}\s?[-,]?\s?\d{2,4}|\d{4}-\d{2}-\d{2})/;
 const NUMBER_TOKEN = /-?(?:\d{1,3}(?:,\d{2,3})+|\d+)(?:\.\d{1,2})?(?:\s?(?:Dr|Cr|DR|CR))?/g;
 
+type PdfColumn = "date" | "description" | "reference" | "debit" | "credit" | "amount" | "type" | "balance";
+type PdfTextItem = { x: number; s: string };
+type PdfLine = { text: string; items: PdfTextItem[] };
+
+const PDF_HEADER_PATTERNS: Record<PdfColumn, RegExp> = {
+  date: /\b(?:txn|transaction|value|posting)?\s*date\b/i,
+  description: /\b(?:description|narration|particulars?|details|remarks|payee)\b/i,
+  reference: /\b(?:ref(?:erence)?|chq|cheque|check)\b/i,
+  debit: /\b(?:debit|withdrawals?|withdrawls?|paid\s+out)\b/i,
+  credit: /\b(?:credit|deposits?|paid\s+in)\b/i,
+  amount: /\b(?:transaction\s+)?(?:amount|amt)\b/i,
+  type: /\b(?:dr\s*\/\s*cr|cr\s*\/\s*dr|transaction\s+type)\b/i,
+  balance: /\b(?:closing\s+)?balance\b/i,
+};
+
+function pdfHeaderColumn(text: string): PdfColumn | undefined {
+  const value = text.replace(/\s+/g, " ").trim();
+  if (PDF_HEADER_PATTERNS.type.test(value)) return "type";
+  for (const column of ["date", "description", "reference", "debit", "credit", "amount", "balance"] as const) {
+    if (PDF_HEADER_PATTERNS[column].test(value)) return column;
+  }
+  return undefined;
+}
+
+function inferPdfColumns(lines: PdfLine[]) {
+  let best: Partial<Record<PdfColumn, number>> | undefined;
+  let bestScore = 2;
+  for (const line of lines) {
+    const found: Partial<Record<PdfColumn, number>> = {};
+    for (const item of line.items) {
+      const column = pdfHeaderColumn(item.s);
+      if (column && found[column] === undefined) found[column] = item.x;
+    }
+    const hasDescription = found.description !== undefined;
+    const hasAmount = found.amount !== undefined || found.debit !== undefined || found.credit !== undefined;
+    const score = Object.keys(found).length + (hasDescription && hasAmount ? 2 : 0);
+    if (found.date !== undefined && hasDescription && hasAmount && score > bestScore) {
+      best = found;
+      bestScore = score;
+    }
+  }
+  if (!best) return undefined;
+  return (Object.entries(best) as [PdfColumn, number][]).sort((a, b) => a[1] - b[1]);
+}
+
+function pdfCell(items: PdfTextItem[], columns: [PdfColumn, number][], column: PdfColumn) {
+  const index = columns.findIndex(([name]) => name === column);
+  if (index < 0) return "";
+  const left = columns[index]?.[1] ?? Number.NEGATIVE_INFINITY;
+  const right = columns[index + 1]?.[1] ?? Number.POSITIVE_INFINITY;
+  return items
+    .filter((item) => item.x >= left - 12 && item.x < right - 12)
+    .map((item) => item.s)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function pdfMoney(value: string) {
+  const cleaned = value.replace(/\bINR\b/gi, "");
+  const direct = parseNumber(cleaned);
+  if (direct !== null) return direct;
+  const candidates = cleaned.match(/-?\(?\d[\d,]*(?:\.\d{1,2})?\)?/g) ?? [];
+  return candidates.length ? parseNumber(candidates[candidates.length - 1] ?? "") : null;
+}
+
 export class PdfPasswordError extends Error {
   constructor(public readonly incorrect: boolean) {
     super(incorrect ? "The PDF password is incorrect." : "This PDF requires a password.");
@@ -208,7 +274,7 @@ export async function readPdf(file: File, password?: string): Promise<RawTable> 
     }
     throw error;
   }
-  const lines: string[] = [];
+  const lines: PdfLine[] = [];
   for (let p = 1; p <= doc.numPages; p++) {
     const page = await doc.getPage(p);
     const content = await page.getTextContent();
@@ -222,14 +288,15 @@ export async function readPdf(file: File, password?: string): Promise<RawTable> 
     }
     const ys = [...byRow.keys()].sort((a, b) => b - a);
     for (const y of ys) {
-      const line = byRow
+      const items = byRow
         .get(y)!
-        .sort((a, b) => a.x - b.x)
+        .sort((a, b) => a.x - b.x);
+      const text = items
         .map((i) => i.s)
         .join(" ")
         .replace(/\s+/g, " ")
         .trim();
-      if (line) lines.push(line);
+      if (text) lines.push({ text, items });
     }
   }
   try {
@@ -240,12 +307,46 @@ export async function readPdf(file: File, password?: string): Promise<RawTable> 
     /* cleanup is best-effort */
   }
 
-  const head = lines.slice(0, 20).join(" ");
+  const head = lines.slice(0, 20).map((line) => line.text).join(" ");
+  const columns = inferPdfColumns(lines);
   const rows: string[][] = [];
   for (const line of lines) {
-    if (!DATE_START.test(line)) continue;
-    const dateMatch = line.match(DATE_START)!;
-    const rest = line.slice(dateMatch[0].length).trim();
+    if (!DATE_START.test(line.text)) continue;
+    const dateMatch = line.text.match(DATE_START);
+    if (!dateMatch) continue;
+    const rest = line.text.slice(dateMatch[0].length).trim();
+
+    if (columns) {
+      const description = pdfCell(line.items, columns, "description") || rest;
+      const debitValue = pdfMoney(pdfCell(line.items, columns, "debit"));
+      const creditValue = pdfMoney(pdfCell(line.items, columns, "credit"));
+      const amountText = pdfCell(line.items, columns, "amount");
+      const amountValue = pdfMoney(amountText);
+      const typeValue = pdfCell(line.items, columns, "type");
+      let debit = "";
+      let credit = "";
+      if (debitValue !== null && debitValue !== 0) debit = String(Math.abs(debitValue));
+      else if (creditValue !== null && creditValue !== 0) credit = String(Math.abs(creditValue));
+      else if (amountValue !== null && amountValue !== 0) {
+        if (/(?:Cr|Credit)$/i.test(amountText.trim()) || /\b(?:CR|CREDIT|DEPOSIT|IN)\b/i.test(typeValue)) {
+          credit = String(Math.abs(amountValue));
+        } else if (/(?:Dr|Debit)$/i.test(amountText.trim()) || /\b(?:DR|DEBIT|WITHDRAWAL|OUT)\b/i.test(typeValue)) {
+          debit = String(Math.abs(amountValue));
+        } else {
+          rows.push([dateMatch[0], description, "", "", pdfCell(line.items, columns, "balance")]);
+          continue;
+        }
+      }
+      rows.push([
+        dateMatch[0],
+        description,
+        debit,
+        credit,
+        pdfCell(line.items, columns, "balance"),
+      ]);
+      continue;
+    }
+
     const numbers = rest.match(NUMBER_TOKEN) ?? [];
     if (numbers.length === 0) continue;
     const firstNumberAt = rest.indexOf(numbers[0] ?? "");
