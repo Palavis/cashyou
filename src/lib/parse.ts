@@ -320,17 +320,21 @@ export async function readPdf(file: File, password?: string): Promise<RawTable> 
       const description = pdfCell(line.items, columns, "description") || rest;
       const debitValue = pdfMoney(pdfCell(line.items, columns, "debit"));
       const creditValue = pdfMoney(pdfCell(line.items, columns, "credit"));
-      const amountValue = pdfMoney(pdfCell(line.items, columns, "amount"));
+      const amountText = pdfCell(line.items, columns, "amount");
+      const amountValue = pdfMoney(amountText);
       const typeValue = pdfCell(line.items, columns, "type");
       let debit = "";
       let credit = "";
       if (debitValue !== null && debitValue !== 0) debit = String(Math.abs(debitValue));
       else if (creditValue !== null && creditValue !== 0) credit = String(Math.abs(creditValue));
       else if (amountValue !== null && amountValue !== 0) {
-        if (/\b(?:CR|CREDIT)\b/i.test(typeValue) || amountValue > 0 && /\b(?:CR|CREDIT)\b/i.test(pdfCell(line.items, columns, "balance"))) {
+        if (/(?:Cr|Credit)$/i.test(amountText.trim()) || /\b(?:CR|CREDIT|DEPOSIT|IN)\b/i.test(typeValue)) {
           credit = String(Math.abs(amountValue));
-        } else {
+        } else if (/(?:Dr|Debit)$/i.test(amountText.trim()) || /\b(?:DR|DEBIT|WITHDRAWAL|OUT)\b/i.test(typeValue)) {
           debit = String(Math.abs(amountValue));
+        } else {
+          rows.push([dateMatch[0], description, "", "", pdfCell(line.items, columns, "balance")]);
+          continue;
         }
       }
       rows.push([
